@@ -91,8 +91,12 @@ public class GameManager : MonoBehaviour
 
                     ResetGame();
 
-                    if (Input.anyKeyDown)
+                    t += Time.fixedUnscaledDeltaTime;
+
+                    if (Input.anyKeyDown || t >= 5f)
                     {
+                        t = 0;
+
                         _context.text = "";
 
                         ChangeState(EnumStates.GAMEPLAY);
@@ -155,6 +159,8 @@ public class GameManager : MonoBehaviour
                 }
             case EnumStates.ENDMATCH:
                 {
+                    _context.gameObject.SetActive(true);
+
                     _context.text = "Match is over! \n press any key to return to title";
 
                     if (Input.anyKeyDown)
@@ -209,7 +215,58 @@ public class GameManager : MonoBehaviour
         _menuPlayers.SetActive(false);
         _menuScore.SetActive(false);
 
+        switch(i)
+        {
+            case 0:
+                {
+                    _playerOnePaddle.GetComponent<PlayerController>().OnDefinePlayerType +=
+                    _playerOnePaddle.GetComponent<PlayerController>().PlayerCommands;
+
+                    _playerOnePaddle.GetComponent<PlayerController>().cpu = false;
+
+                    _playerTwoPaddle.GetComponent<PlayerController>().OnDefinePlayerType +=
+                    _playerTwoPaddle.GetComponent<PlayerController>().PlayerCommands;
+
+                    _playerTwoPaddle.GetComponent<PlayerController>().cpu = false;
+
+                    break;
+                }
+            case 1:
+                {
+                    _playerOnePaddle.GetComponent<PlayerController>().OnDefinePlayerType +=
+                    _playerOnePaddle.GetComponent<PlayerController>().PlayerCommands;
+
+                    _playerOnePaddle.GetComponent<PlayerController>().cpu = false;
+
+                    _playerTwoPaddle.GetComponent<PlayerController>().OnDefinePlayerType +=
+                    _playerTwoPaddle.GetComponent<PlayerController>().IACommands;
+
+                    _playerTwoPaddle.GetComponent<PlayerController>().cpu = true;
+
+                    break;
+                }
+            case 2:
+                {
+                    _playerOnePaddle.GetComponent<PlayerController>().OnDefinePlayerType +=
+                    _playerOnePaddle.GetComponent<PlayerController>().IACommands;
+
+                    _playerOnePaddle.GetComponent<PlayerController>().cpu = true;
+
+                    _playerTwoPaddle.GetComponent<PlayerController>().OnDefinePlayerType +=
+                    _playerTwoPaddle.GetComponent<PlayerController>().IACommands;
+
+                    _playerTwoPaddle.GetComponent<PlayerController>().cpu = true;
+
+                    break;
+                }
+        }
+
         ChangeState(EnumStates.BEGIN);
+    }
+
+    public void SetPlayersControl()
+    {
+
     }
 
     private void OnEnable()

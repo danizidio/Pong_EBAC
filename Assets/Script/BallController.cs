@@ -1,4 +1,4 @@
-using System;
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +7,7 @@ public class BallController : MonoBehaviour
 {
     Rigidbody2D _rb;
 
-    [SerializeField] Vector2 _startPos;
+    [SerializeField] Vector2[] _startPos;
 
     [SerializeField] GameObject _trail;
 
@@ -17,7 +17,7 @@ public class BallController : MonoBehaviour
 
         if(_rb == null) _rb = GetComponent<Rigidbody2D>();
 
-        _rb.velocity = _startPos;
+        _rb.velocity = _startPos[Random.Range(0, _startPos.Length)];
 
         _trail.SetActive(true);
     }
