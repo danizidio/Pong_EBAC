@@ -84,6 +84,8 @@ public class GameManager : MonoBehaviour
                 {
                     _gameAssets.SetActive(true);
 
+                    _context.gameObject.SetActive(true);
+
                     _context.text = "Press any Key to Start";
 
                     _scoreText[0].gameObject.SetActive(true);
@@ -91,13 +93,18 @@ public class GameManager : MonoBehaviour
 
                     ResetGame();
 
-                    t += Time.fixedUnscaledDeltaTime;
+                    if (_playerOnePaddle.GetComponent<PlayerController>().cpu && _playerTwoPaddle.GetComponent<PlayerController>().cpu)
+                    {
+                        t += Time.unscaledDeltaTime;
+                    }
 
-                    if (Input.anyKeyDown || t >= 5f)
+                    if (Input.anyKeyDown || t >= 1f)
                     {
                         t = 0;
 
                         _context.text = "";
+
+                        _context.gameObject.SetActive(false);
 
                         ChangeState(EnumStates.GAMEPLAY);
                     }
@@ -124,6 +131,7 @@ public class GameManager : MonoBehaviour
                     if (t >= 3.5f)
                     {
                         t = 0;
+
                         if (scoreA >= _maxScore | scoreB >= _maxScore)
                         {
                             ChangeState(EnumStates.ENDMATCH);
@@ -139,10 +147,13 @@ public class GameManager : MonoBehaviour
                 {
                     Time.timeScale = 0;
 
+                    _context.gameObject.SetActive(true);
+
                     _context.text = "Press esc to Return to Game \n Press Enter to Return to Title Screen";
 
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
+                        _context.gameObject.SetActive(false);
                         _context.text = "";
 
                         ChangeState(EnumStates.GAMEPLAY);
