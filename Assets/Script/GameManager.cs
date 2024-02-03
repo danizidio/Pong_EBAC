@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
     public Transform playerOnePaddle { get { return _playerOnePaddle; }}
     public Transform playerTwoPaddle { get { return _playerTwoPaddle; }}
 
+    [SerializeField] Color[] _playerColor;
+
     [Space(10)]
 
     [SerializeField] BallController _ballController;
@@ -30,8 +32,13 @@ public class GameManager : MonoBehaviour
     [Space(10)]
 
     int scoreA, scoreB, _maxScore;
+    int _playersReady, _howMany;
+
+    string _playerOneName, _playerTwoName, _gameWinner;
+
     float t;
-    [SerializeField] GameObject _gameAssets, _title, _menuScore, _menuPlayers, _menuPause;
+
+    [SerializeField] GameObject _gameAssets, _title, _menuScore, _menuPlayers, _colorsOne, _colorsTwo, _menuPause;
 
     void Start()
     {
@@ -132,8 +139,16 @@ public class GameManager : MonoBehaviour
                     {
                         t = 0;
 
-                        if (scoreA >= _maxScore | scoreB >= _maxScore)
+                        if (scoreA >= _maxScore)
                         {
+                            _playerOneName = _gameWinner;
+
+                            ChangeState(EnumStates.ENDMATCH);
+                        }
+                        else if(scoreB >= _maxScore)
+                        {
+                            _playerTwoName = _gameWinner;
+
                             ChangeState(EnumStates.ENDMATCH);
                         }
                         else
@@ -172,7 +187,7 @@ public class GameManager : MonoBehaviour
                 {
                     _context.gameObject.SetActive(true);
 
-                    _context.text = "Match is over! \n press any key to return to title";
+                    _context.text = "Match is over! \n" + _gameWinner + "\n press any key to return to title";
 
                     if (Input.anyKeyDown)
                     {
@@ -240,6 +255,11 @@ public class GameManager : MonoBehaviour
 
                     _playerTwoPaddle.GetComponent<PlayerController>().cpu = false;
 
+                    _colorsOne.SetActive(true);
+                    _colorsTwo.SetActive(true);
+
+                    _howMany = 2;
+
                     break;
                 }
             case 1:
@@ -253,6 +273,11 @@ public class GameManager : MonoBehaviour
                     _playerTwoPaddle.GetComponent<PlayerController>().IACommands;
 
                     _playerTwoPaddle.GetComponent<PlayerController>().cpu = true;
+
+                    _colorsOne.SetActive(true);
+                    _colorsTwo.SetActive(false);
+
+                    _howMany = 1;
 
                     break;
                 }
@@ -268,16 +293,46 @@ public class GameManager : MonoBehaviour
 
                     _playerTwoPaddle.GetComponent<PlayerController>().cpu = true;
 
+                    ChangeState(EnumStates.BEGIN);
+
                     break;
                 }
         }
 
-        ChangeState(EnumStates.BEGIN);
+        _menuPlayers.SetActive(false);
     }
 
-    public void SetPlayersControl()
+    public void SetPlayerOneColors(int i)
     {
+        _playerOnePaddle.GetComponent<SpriteRenderer>().color = _playerColor[i];
+    }
 
+    public void SetPlayerTwoColors(int i)
+    {
+        _playerTwoPaddle.GetComponent<SpriteRenderer>().color = _playerColor[i];
+    }
+
+    public void SetPlayersOneName(string s)
+    {
+        _playerOneName = s;
+    }
+
+    public void SetPlayersTwoName(string s)
+    {
+        _playerTwoName = s;
+    }
+
+    public void AllPlayersReady()
+    {
+        _playersReady++;
+
+        if(_playersReady >= _howMany)
+        {
+            _colorsOne.SetActive(false);
+            _colorsTwo.SetActive(false);
+
+            ChangeState(EnumStates.BEGIN);
+        }
     }
 
     private void OnEnable()
