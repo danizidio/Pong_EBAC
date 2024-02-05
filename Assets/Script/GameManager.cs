@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
     [Space(10)]
 
     [SerializeField] TMP_Text _context;
+    [SerializeField] TMP_Text _lastWinner;
     [SerializeField] TMP_Text _playerOneText;
     [SerializeField] TMP_Text _playerTwoText;
     [SerializeField] GameObject _goalText;
@@ -42,10 +44,26 @@ public class GameManager : MonoBehaviour
 
     float t;
 
-    [SerializeField] GameObject _gameAssets, _title, _menuScore, _menuPlayers, _colorsOne, _colorsTwo, _menuPause;
+    [SerializeField] GameObject _gameAssets, _title, _menuScore, _menuPlayers, _colorsOne, _colorsTwo, _menuPause, _clearData;
 
     void Start()
     {
+
+        if(PlayerPrefs.HasKey("LAST_WINNER") && PlayerPrefs.GetString("LAST_WINNER") != "")
+        {
+            _lastWinner.gameObject.SetActive(true);
+
+            _lastWinner.text = "The Last Triumphant - " + PlayerPrefs.GetString("LAST_WINNER");
+
+            _clearData.SetActive(true);
+        }
+        else
+        {
+            _lastWinner.gameObject.SetActive(false);
+
+            _clearData.SetActive(false);
+        }
+
         ChangeState(EnumStates.TITLE);
     }
 
@@ -82,7 +100,7 @@ public class GameManager : MonoBehaviour
 
                     _context.text = "";
 
-                    if (Input.anyKeyDown)
+                    if (Input.GetKeyDown(KeyCode.Return))
                     {
                         _menuScore.SetActive(true);
                         ChangeState(EnumStates.MENU);
@@ -92,6 +110,7 @@ public class GameManager : MonoBehaviour
                 }
             case EnumStates.MENU:
                 {
+                    _lastWinner.gameObject.SetActive(false);
                     _title.SetActive(false);
                     _gameAssets.SetActive(false);
 
@@ -151,13 +170,13 @@ public class GameManager : MonoBehaviour
 
                         if (scoreA >= _maxScore)
                         {
-                            _playerOneName = _gameWinner;
+                            _gameWinner = _playerOneName;
 
                             ChangeState(EnumStates.ENDMATCH);
                         }
                         else if(scoreB >= _maxScore)
                         {
-                            _playerTwoName = _gameWinner;
+                            _gameWinner = _playerTwoName;
 
                             ChangeState(EnumStates.ENDMATCH);
                         }
@@ -188,7 +207,7 @@ public class GameManager : MonoBehaviour
                     {
                         _context.text = "";
 
-                        ChangeState(EnumStates.TITLE);
+                        SceneManager.LoadScene("EBAC_Pong");
                     }
 
                     break;
@@ -197,13 +216,16 @@ public class GameManager : MonoBehaviour
                 {
                     _context.gameObject.SetActive(true);
 
-                    _context.text = "Match is over! \n" + _gameWinner + "\n press any key to return to title";
+                    PlayerPrefs.SetString("LAST_WINNER", _gameWinner + " with a score: " + scoreA + " x " + scoreB);
+
+                    _context.text = "Match is over! \n" + _gameWinner + " Wins!" + "\n press any key to return to title";
+
 
                     if (Input.anyKeyDown)
                     {
                         _context.text = "";
 
-                        ChangeState(EnumStates.TITLE);
+                        SceneManager.LoadScene("EBAC_Pong");
                     }
 
                     break;
@@ -287,6 +309,10 @@ public class GameManager : MonoBehaviour
                     _colorsOne.SetActive(true);
                     _colorsTwo.SetActive(false);
 
+                    EditNamePlayerTwo("CPU");
+
+                    SetPlayerTwoColors(UnityEngine.Random.Range(0, _playerColor.Length));
+
                     _howMany = 1;
 
                     break;
@@ -303,7 +329,13 @@ public class GameManager : MonoBehaviour
 
                     _playerTwoPaddle.GetComponent<PlayerController>().cpu = true;
 
-                    ChangeState(EnumStates.BEGIN);
+                    SetPlayerOneColors(UnityEngine.Random.Range(0, _playerColor.Length));
+                    SetPlayerTwoColors(UnityEngine.Random.Range(0, _playerColor.Length));
+
+                    EditNamePlayerOne("CPU 1");
+                    EditNamePlayerTwo("CPU 2");
+
+                    AllPlayersReady();
 
                     break;
                 }
@@ -346,6 +378,13 @@ public class GameManager : MonoBehaviour
 
             ChangeState(EnumStates.BEGIN);
         }
+    }
+
+    public void ClearResults()
+    {
+        PlayerPrefs.DeleteAll();
+
+        SceneManager.LoadScene("EBAC_Pong");
     }
 
     private void OnEnable()
