@@ -26,8 +26,12 @@ public class GameManager : MonoBehaviour
     [Space(10)]
 
     [SerializeField] TMP_Text _context;
+    [SerializeField] TMP_Text _playerOneText;
+    [SerializeField] TMP_Text _playerTwoText;
     [SerializeField] GameObject _goalText;
     [SerializeField] Score_UI[] _scoreText;
+    [SerializeField] TMP_InputField _inputTxtPlayerOne;
+    [SerializeField] TMP_InputField _inputTxtPlayerTwo;
 
     [Space(10)]
 
@@ -69,6 +73,12 @@ public class GameManager : MonoBehaviour
                     _scoreText[1].gameObject.SetActive(false);
                     _menuPlayers.SetActive(false);
                     _menuScore.SetActive(false);
+                    _colorsOne.SetActive(false);
+                    _colorsTwo.SetActive(false);
+
+                    _playerOneName = _inputTxtPlayerOne.text;
+
+                    _playerTwoName = _inputTxtPlayerTwo.text;
 
                     _context.text = "";
 
@@ -312,21 +322,24 @@ public class GameManager : MonoBehaviour
         _playerTwoPaddle.GetComponent<SpriteRenderer>().color = _playerColor[i];
     }
 
-    public void SetPlayersOneName(string s)
+    public void EditNamePlayerOne(string s)
     {
         _playerOneName = s;
     }
 
-    public void SetPlayersTwoName(string s)
+    public void EditNamePlayerTwo(string s)
     {
         _playerTwoName = s;
     }
-
     public void AllPlayersReady()
     {
         _playersReady++;
 
-        if(_playersReady >= _howMany)
+        _playerOneText.text = _playerOneName;
+
+        _playerTwoText.text = _playerTwoName;
+
+        if (_playersReady >= _howMany)
         {
             _colorsOne.SetActive(false);
             _colorsTwo.SetActive(false);
