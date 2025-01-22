@@ -1,12 +1,12 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance;
+
     public static Action<int, int> OnUpdatePoints;
 
     [SerializeField] EnumStates _currentState, _nextState;
@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] TMP_Text _lastWinner;
     [SerializeField] TMP_Text _playerOneText;
     [SerializeField] TMP_Text _playerTwoText;
+    [SerializeField] TMP_Text _pressSomething;
     [SerializeField] GameObject _goalText;
     [SerializeField] Score_UI[] _scoreText;
     [SerializeField] TMP_InputField _inputTxtPlayerOne;
@@ -44,7 +45,13 @@ public class GameManager : MonoBehaviour
 
     float t;
 
-    [SerializeField] GameObject _gameAssets, _title, _menuScore, _menuPlayers, _colorsOne, _colorsTwo, _menuPause, _clearData;
+    [SerializeField] GameObject _gameAssets, _title, _menuScoreRule, _gameplayScore, _menuPlayers, _colorsOne, _colorsTwo, _menuPause, _clearData;
+
+    private void Awake()
+    {
+        Application.targetFrameRate = 61;    
+        Instance = this;
+    }
 
     void Start()
     {
@@ -63,6 +70,15 @@ public class GameManager : MonoBehaviour
 
             _clearData.SetActive(false);
         }
+
+#if PLATFORM_ANDROID
+        _pressSomething.text = "Touch to Start";
+#endif
+#if PLATFORM_STANDALONE_WIN
+                    _pressSomething.text = "Press Enter to Start";
+#endif
+
+        _menuScoreRule.SetActive(false);
 
         ChangeState(EnumStates.TITLE);
     }
@@ -90,7 +106,8 @@ public class GameManager : MonoBehaviour
                     _scoreText[0].gameObject.SetActive(false);
                     _scoreText[1].gameObject.SetActive(false);
                     _menuPlayers.SetActive(false);
-                    _menuScore.SetActive(false);
+
+                    _gameplayScore.SetActive(false);
                     _colorsOne.SetActive(false);
                     _colorsTwo.SetActive(false);
 
@@ -102,8 +119,7 @@ public class GameManager : MonoBehaviour
 
                     if (Input.GetKeyDown(KeyCode.Return))
                     {
-                        _menuScore.SetActive(true);
-                        ChangeState(EnumStates.MENU);
+                        EnterMenu();
                     }
 
                     break;
@@ -122,8 +138,12 @@ public class GameManager : MonoBehaviour
 
                     _context.gameObject.SetActive(true);
 
+#if PLATFORM_ANDROID
+                    _context.text = "Touch to Start";
+#endif
+#if PLATFORM_STANDALONE_WIN
                     _context.text = "Press any Key to Start";
-
+#endif
                     _scoreText[0].gameObject.SetActive(true);
                     _scoreText[1].gameObject.SetActive(true);
 
@@ -153,7 +173,9 @@ public class GameManager : MonoBehaviour
                 {
                     Time.timeScale = 1;
 
-                    if(Input.GetKeyDown(KeyCode.Escape))
+                    _gameplayScore.SetActive(true);
+
+                    if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         ChangeState(EnumStates.PAUSE);
                     }
@@ -195,6 +217,11 @@ public class GameManager : MonoBehaviour
 
                     _context.text = "Press esc to Return to Game \n Press Enter to Return to Title Screen";
 
+                    foreach(Score_UI o in _scoreText)
+                    {
+                        o.GetComponent<GameObject>().gameObject.SetActive(false);
+                    }
+
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         _context.gameObject.SetActive(false);
@@ -232,6 +259,13 @@ public class GameManager : MonoBehaviour
                 }
         } 
     }
+
+    public void EnterMenu()
+    {
+        _menuScoreRule.SetActive(true);
+        ChangeState(EnumStates.MENU);
+    }
+
     void ResetGame()
     {
         _playerOnePaddle.position = new Vector3(-8f, 0f, 0f);
@@ -265,13 +299,13 @@ public class GameManager : MonoBehaviour
         _maxScore = i;
 
         _menuPlayers.SetActive(true);
-        _menuScore.SetActive(false);
+        _menuScoreRule.SetActive(false);
     }
 
     public void SetMatchPlayer(int i)
     {
         _menuPlayers.SetActive(false);
-        _menuScore.SetActive(false);
+        _menuScoreRule.SetActive(false);
 
         switch(i)
         {
@@ -378,13 +412,6 @@ public class GameManager : MonoBehaviour
 
             ChangeState(EnumStates.BEGIN);
         }
-    }
-
-    public void ClearResults()
-    {
-        PlayerPrefs.DeleteAll();
-
-        SceneManager.LoadScene("EBAC_Pong");
     }
 
     private void OnEnable()

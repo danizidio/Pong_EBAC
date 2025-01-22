@@ -1,11 +1,16 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+enum Players
+{
+    None,
+    PLAYER_ONE,
+    PLAYER_TWO,
+}
 
 public class PlayerController : MonoBehaviour
 {
-
+    [SerializeField]  Players _player = Players.None;
     public event Action OnDefinePlayerType;
 
     [SerializeField] int _playerNumber;
@@ -28,8 +33,19 @@ public class PlayerController : MonoBehaviour
     bool _cpu;
     public bool cpu { get { return _cpu; } set { _cpu = value; } }
 
+    #region -- TouchConfig --
+
+    private Vector2 touchStartPosition;
+    private Vector2 touchEndPosition;
+    private Vector2 touchDeltaPosition;
+    private bool isDragging = false;
+    #endregion
+
+
+
     private void Start()
     {
+
         _ball = GameObject.FindGameObjectWithTag("BALL");
     }
 
@@ -54,8 +70,49 @@ public class PlayerController : MonoBehaviour
 
     public void PlayerCommands()
     {
+
         _playerPos = transform.position + Vector3.up * _getInput * _speed * Time.deltaTime;
-        _playerPos.y = Mathf.Clamp(_playerPos.y, _minHeight, _maxHeight);
+
+#if PLATFORM_ANDROID
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            float screenWidth = Screen.width;
+
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    touchStartPosition = touch.position;
+                    isDragging = true;
+                    break;
+
+                case TouchPhase.Moved:
+
+                    if (touch.position.x < screenWidth * .2f && _player == Players.PLAYER_ONE)
+                    {
+                        touchEndPosition = touch.position;
+                        touchDeltaPosition = touchEndPosition - touchStartPosition;
+                        //_playerPos = new Vector2(transform.position.x, transform.position.y + touchDeltaPosition.y * Time.deltaTime * _speed);  
+                        _playerPos = new Vector2(transform.position.x, transform.position.y + _speed * touchDeltaPosition.y * Time.deltaTime);
+                    }
+
+                    if (touch.position.x > screenWidth * .8f && _player == Players.PLAYER_TWO)
+                    {
+                        touchEndPosition = touch.position;
+                        touchDeltaPosition = touchEndPosition - touchStartPosition;
+                        //_playerPos = new Vector2(transform.position.x, transform.position.y + touchDeltaPosition.y * Time.deltaTime * _speed);
+                        _playerPos = new Vector2(transform.position.x, transform.position.y + _speed * touchDeltaPosition.y * Time.deltaTime);
+                    }
+                    touchStartPosition = touchEndPosition;
+                    break;
+                case TouchPhase.Ended:
+                    isDragging = false;
+                    break;
+            }
+#endif
+
+            _playerPos.y = Mathf.Clamp(_playerPos.y, _minHeight, _maxHeight);
+        }
     }
 
     public void IACommands()
@@ -63,7 +120,6 @@ public class PlayerController : MonoBehaviour
         if (_ball != null)
         {
             float targetY = Mathf.Clamp(_ball.transform.position.y, _minHeight, _maxHeight);
-
             Vector2 targetPosition = new Vector2(transform.position.x, targetY);
 
             if (_playerNumber == 1 && _ball.transform.position.x < -.3f)
