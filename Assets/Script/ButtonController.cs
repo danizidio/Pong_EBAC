@@ -17,7 +17,19 @@ public class ButtonController : MonoBehaviour
 
     public void PauseGame()
     {
-        GameManager.Instance.ChangeState(EnumStates.PAUSE);
+        if (GameManager.Instance.currentState == EnumStates.GAMEPLAY)
+        {
+            GameManager.Instance.ChangeState(EnumStates.PAUSE);
+        }
+        if (GameManager.Instance.currentState == EnumStates.PAUSE)
+        {
+            GameManager.Instance.ChangeState(EnumStates.GAMEPLAY);
+        }
+    }
+
+    public void ResetGame()
+    {
+        SceneManager.LoadScene("EBAC_Pong");
     }
 
     public void ClearResults()

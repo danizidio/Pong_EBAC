@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.VFX;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,6 +12,7 @@ public class GameManager : MonoBehaviour
     public static Action<int, int> OnUpdatePoints;
 
     [SerializeField] EnumStates _currentState, _nextState;
+    public EnumStates currentState { get { return _currentState; } }
 
     [Space(10)]
 
@@ -24,6 +27,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] BallController _ballController;
 
+    [Space(10)]
+    [SerializeField] List<VisualEffect> _confetFX;
     [Space(10)]
 
     [SerializeField] TMP_Text _context;
@@ -173,8 +178,9 @@ public class GameManager : MonoBehaviour
                 {
                     Time.timeScale = 1;
 
+                    _menuPause.SetActive(false);
                     _gameplayScore.SetActive(true);
-
+                    _context.gameObject.SetActive(false);
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         ChangeState(EnumStates.PAUSE);
@@ -185,6 +191,8 @@ public class GameManager : MonoBehaviour
             case EnumStates.GOAL:
                 {
                     t += Time.deltaTime;
+
+                    _ballController.gameObject.SetActive(false);
 
                     if (t >= 3.5f)
                     {
@@ -213,15 +221,17 @@ public class GameManager : MonoBehaviour
                 {
                     Time.timeScale = 0;
 
+                    _menuPause.SetActive(true);
                     _context.gameObject.SetActive(true);
+                    _gameplayScore.SetActive(false);
 
+#if PLATFORM_STANDALONE_WIN
                     _context.text = "Press esc to Return to Game \n Press Enter to Return to Title Screen";
+#endif
 
-                    foreach(Score_UI o in _scoreText)
-                    {
-                        o.GetComponent<GameObject>().gameObject.SetActive(false);
-                    }
-
+#if PLATFORM_ANDROID
+                    _context.text = "Touch the pause button again to Return to Game \n Touch the X button to Return to the Title Screen";
+#endif
                     if (Input.GetKeyDown(KeyCode.Escape))
                     {
                         _context.gameObject.SetActive(false);
@@ -243,10 +253,20 @@ public class GameManager : MonoBehaviour
                 {
                     _context.gameObject.SetActive(true);
 
+                    foreach(var v in _confetFX)
+                    {
+                        v.Play();
+                    }
+
                     PlayerPrefs.SetString("LAST_WINNER", _gameWinner + " with a score: " + scoreA + " x " + scoreB);
 
+#if PLATFORM_STANDALONE_WIN
                     _context.text = "Match is over! \n" + _gameWinner + " Wins!" + "\n press any key to return to title";
+#endif
 
+#if PLATFORM_ANDROID
+                    _context.text = "Match is over! \n" + _gameWinner + " Wins!" + "\n Touch the screen to return to the title";
+#endif
 
                     if (Input.anyKeyDown)
                     {
@@ -271,6 +291,10 @@ public class GameManager : MonoBehaviour
         _playerOnePaddle.position = new Vector3(-8f, 0f, 0f);
         _playerTwoPaddle.position = new Vector3(8f, 0f, 0f);
 
+        if (!_ballController.gameObject.activeSelf)
+        {
+            _ballController.gameObject.SetActive(true);
+        }
         _ballController.ResetBall();
     }
 

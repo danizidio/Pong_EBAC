@@ -10,7 +10,7 @@ enum Players
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField]  Players _player = Players.None;
+    [SerializeField] Players _player = Players.None;
     public event Action OnDefinePlayerType;
 
     [SerializeField] int _playerNumber;
@@ -111,8 +111,11 @@ public class PlayerController : MonoBehaviour
             }
 #endif
 
-            _playerPos.y = Mathf.Clamp(_playerPos.y, _minHeight, _maxHeight);
+        _playerPos.y = Mathf.Clamp(_playerPos.y, _minHeight, _maxHeight);
+
+#if PLATFORM_ANDROID
         }
+#endif
     }
 
     public void IACommands()
