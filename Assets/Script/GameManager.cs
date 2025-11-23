@@ -61,6 +61,11 @@ public class GameManager : MonoBehaviour
     void Start()
     {
 
+        foreach (var item in _confetFX)
+        {
+            item.gameObject.SetActive(false);
+        }
+
         if(PlayerPrefs.HasKey("LAST_WINNER") && PlayerPrefs.GetString("LAST_WINNER") != "")
         {
             _lastWinner.gameObject.SetActive(true);
@@ -255,7 +260,11 @@ public class GameManager : MonoBehaviour
 
                     foreach(var v in _confetFX)
                     {
-                        v.Play();
+                        if (v.gameObject.activeSelf == false)
+                        {
+                            v.gameObject.SetActive(v);
+                            v.Play();
+                        }
                     }
 
                     PlayerPrefs.SetString("LAST_WINNER", _gameWinner + " with a score: " + scoreA + " x " + scoreB);

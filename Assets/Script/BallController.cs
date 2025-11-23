@@ -14,7 +14,7 @@ public class BallController : MonoBehaviour
 
         if(_rb == null) _rb = GetComponent<Rigidbody2D>();
 
-        _rb.velocity = _startPos[Random.Range(0, _startPos.Length)];
+        _rb.linearVelocity = _startPos[Random.Range(0, _startPos.Length)];
 
         _trail.SetActive(true);
     }
@@ -23,18 +23,18 @@ public class BallController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("WALL"))
         {
-            Vector2 _newVelocity = new Vector2(_rb.velocity.x, _rb.velocity.y);
+            Vector2 _newVelocity = new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.y);
 
             _newVelocity.y = -_newVelocity.y;
 
-            _rb.velocity = _newVelocity;
+            _rb.linearVelocity = _newVelocity;
         }
 
         if (collision.gameObject.CompareTag("PLAYER"))
         {
             PlayerController p = collision.gameObject.GetComponent<PlayerController>();
 
-            Vector2 _newVelocity = new Vector2(_rb.velocity.x, _rb.velocity.y);
+            Vector2 _newVelocity = new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.y);
 
             _newVelocity.x = -_newVelocity.x;
             
@@ -43,9 +43,9 @@ public class BallController : MonoBehaviour
                 _newVelocity.y = _newVelocity.y * p.GetDirection();
             }
 
-            _rb.velocity = _newVelocity;
+            _rb.linearVelocity = _newVelocity;
 
-            _rb.velocity *= 1.05f;
+            _rb.linearVelocity *= 1.05f;
         }
 
         if (collision.gameObject.CompareTag("WALL_PLAYER_ONE"))
